@@ -30,7 +30,7 @@
 						<div class="card margin-bottom-no">
 							<div class="card-main">
 								<div class="card-inner">
-									<p>您可以在<a href="/user/code">充值界面</a>进行充值，这样就等同于捐赠了。</p>
+									<p>如果想捐赠的话，请查看群公告中的捐赠二维码。</p>
 									
 									<p>总收入：{$total_in} 元</p>
 									
@@ -40,7 +40,7 @@
 						</div>
 					</div>
 				
-					<div class="col-lg-12 col-md-12">
+					<div class="col-lg-12 col-md-12" style="display:none">
 						<div class="card margin-bottom-no">
 							<div class="card-main">
 								<div class="card-inner">
@@ -78,7 +78,7 @@
 												<table class="table table-hover">
 													<tr>
 														<th>ID</th>
-														<th>用户名</th>
+														<!--<th>用户名</th>-->
 														<th>类型</th>
 														<th>操作</th>
 														<th>备注</th>
@@ -89,9 +89,9 @@
 														<tr>
 															<td>#{$code->id}</td>
 															{if $code->user() != null && $code->user()->is_hide == 0}
-															<td>{$code->user()->user_name}</td>
+															<!--<td>{$code->user()->user_name}</td>-->
 															{else}
-															<td>已注销或用户要求匿名</td>
+															<!--<td>已注销或用户要求匿名</td>-->
 															{/if}
 															{if $code->type == -1}
 															<td>充值捐赠</td>
