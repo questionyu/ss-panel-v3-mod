@@ -323,7 +323,7 @@
 								<div class="card-main">
 									<div class="card-inner margin-bottom-no">
 										<p class="card-heading">续命获取流量</p>
-											<p>流量不会重置，可以通过续命获取流量。</p>
+											<!--<p>流量不会重置，可以通过续命获取流量。</p>-->
 
 											<p>每次续命可以获取{$config['checkinMin']}~{$config['checkinMax']}MB流量。</p>
 
@@ -440,11 +440,11 @@ window.onload = function() {
                 success: function (data) {
                     $("#checkin-msg").html(data.msg);
                     $("#checkin-btn").hide();
-					$("#result").modal();
+                    $("#result").modal();
                     $("#msg").html(data.msg);
                 },
                 error: function (jqXHR) {
-					$("#result").modal();
+                    $("#result").modal();
                     $("#msg").html("发生错误：" + jqXHR.status);
                 }
             });
@@ -499,16 +499,16 @@ window.onload = function() {
 var handlerPopup = function (captchaObj) {
 	c = captchaObj;
 	captchaObj.onSuccess(function () {
-		var validate = captchaObj.getValidate();
+		var result = captchaObj.getValidate();
 		$.ajax({
 			url: "/user/checkin", // 进行二次验证
-			type: "post",
+			type: "POST",
 			dataType: "json",
 			data: {
 				// 二次验证所需的三个值
-				geetest_challenge: validate.geetest_challenge,
-				geetest_validate: validate.geetest_validate,
-				geetest_seccode: validate.geetest_seccode
+				geetest_challenge: result.geetest_challenge,
+				geetest_validate: result.geetest_validate,
+				geetest_seccode: result.geetest_seccode
 			},
 			success: function (data) {
 				$("#checkin-msg").html(data.msg);
@@ -522,17 +522,18 @@ var handlerPopup = function (captchaObj) {
 			}
 		});
 	});
-	// 弹出式需要绑定触发验证码弹出按钮
-	captchaObj.bindOn("#checkin");
-	// 将验证码加到id为captcha的元素里
-	captchaObj.appendTo("#popup-captcha");
-	// 更多接口参考：http://www.geetest.com/install/sections/idx-client-sdk.html
+	$('#checkin').click(function () {
+		// 调用之前先通过前端表单校验
+
+		captchaObj.verify();
+	});
+	// 更多接口说明请参见：http://docs.geetest.com/install/client/web-front/
 };
 
 initGeetest({
 	gt: "{$geetest_html->gt}",
 	challenge: "{$geetest_html->challenge}",
-	product: "popup", // 产品形式，包括：float，embed，popup。注意只对PC版验证码有效
+	product: "bind", // 产品形式，包括：float，embed，popup。注意只对PC版验证码有效
 	offline: {if $geetest_html->success}0{else}1{/if} // 表示用户后台检测极验服务器是否宕机，与SDK配合，用户一般不需要关注
 }, handlerPopup);
 
