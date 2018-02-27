@@ -4,6 +4,8 @@ namespace App\Utils;
 
 use App\Models\User;
 use App\Services\Config;
+use App\Utils\Tools;
+use App\Services\Analytics;
 
 class TelegramProcess
 {
@@ -12,11 +14,10 @@ class TelegramProcess
         if ($user != null) {
             switch ($command) {
                 case 'traffic':
-                    $bot->sendMessage($message->getChat()->getId(), "您当前的流量状况：
-																	今日已使用 ".$user->TodayusedTraffic()." ".number_format(($user->u+$user->d-$user->last_day_t)/$user->transfer_enable*100, 2)."%
-																	今日之前已使用 ".$user->LastusedTraffic()." ".number_format($user->last_day_t/$user->transfer_enable*100, 2)."%
-																	未使用 ".$user->unusedTraffic()." ".number_format(($user->transfer_enable-($user->u+$user->d))/$user->transfer_enable*100, 2)."%
-					                        ", $parseMode = null, $disablePreview = false, $replyToMessageId = $reply_to);
+                    $bot->sendMessage($message->getChat()->getId(), "您当前的流量状况：".PHP_EOL.
+                    "今日已使用 ".$user->TodayusedTraffic()." ".number_format(($user->u+$user->d-$user->last_day_t)/$user->transfer_enable*100, 2)."%".PHP_EOL.
+                    "今日之前已使用 ".$user->LastusedTraffic()." ".number_format($user->last_day_t/$user->transfer_enable*100, 2)."%".PHP_EOL.
+                    "未使用 ".$user->unusedTraffic()." ".number_format(($user->transfer_enable-($user->u+$user->d))/$user->transfer_enable*100, 2)."%", $parseMode = null, $disablePreview = false, $replyToMessageId = $reply_to);
                     break;
                 case 'checkin':
                     if (!$user->isAbleToCheckin()) {
@@ -28,6 +29,19 @@ class TelegramProcess
                     $user->last_check_in_time = time();
                     $user->save();
                     $bot->sendMessage($message->getChat()->getId(), "天若有情天亦老，我为长者续一秒！获得了 ".$traffic." MB 流量！", $parseMode = null, $disablePreview = false, $replyToMessageId = $reply_to);
+                    break;
+                case 'status':
+                    if (!$user->isAdmin()) {
+                        $bot->sendMessage($message->getChat()->getId(), "您不是管理，不能提前看今天系统状况哦~", $parseMode = null, $disablePreview = false, $replyToMessageId = $reply_to);
+                        break;
+                    }
+                    $users = User::all();
+                    $lastday_total = 0;
+                    foreach ($users as $singleuser) {
+                        $lastday_total += (($singleuser->u+$singleuser->d)-$singleuser->last_day_t);
+                    }
+                    $sts = new Analytics();
+                    $bot->sendMessage($message->getChat()->getId(), "今日签到人数:".$sts->getTodayCheckinUser().PHP_EOL."今日使用总流量:".Tools::flowAutoShow($lastday_total), $parseMode = null, $disablePreview = false, $replyToMessageId = $reply_to);
                     break;
                 default:
                     $bot->sendMessage($message->getChat()->getId(), "???", $parseMode = null, $disablePreview = false, $replyToMessageId = $reply_to);
@@ -51,24 +65,26 @@ class TelegramProcess
                     $bot->sendMessage($message->getChat()->getId(), 'Pong!这个群组的 ID 是 '.$message->getChat()->getId().'!');
                     break;
                 case 'chat':
-                    $bot->sendMessage($message->getChat()->getId(), Tuling::chat($message->getFrom()->getId(), substr($message->getText(), 5)));
+                    $bot->sendMessage($message->getChat()->getId(), Tuling::chat($message->getFrom()->getId(), substr($message->getText(), 5)), $parseMode = Markdown, $disablePreview = true);
                     break;
                 case 'traffic':
                     TelegramProcess::needbind_method($bot, $message, $command, $user);
                     break;
                 case 'checkin':
-                    TelegramProcess::needbind_method($bot, $message, $command, $user, $message->getMessageId());
+                    TelegramProcess::needbind_method($bot, $message, $command, $user);
+                    break;
+                case 'status':
+                    TelegramProcess::needbind_method($bot, $message, $command, $user);
                     break;
                 case 'help':
-                    $help_list = "命令列表：
-						/ping  获取群组ID
-						/chat 唠嗑
-						/traffic 查询流量
-						/checkin 签到续命
-						/help 获取帮助信息
-
-						您可以在面板里点击 资料编辑 ，滑到页面最下方，就可以看到 Telegram 绑定指示了，绑定您的账号，更多精彩功能等着您去发掘。
-					          ";
+                    $help_list = "命令列表：".PHP_EOL.
+                        "/ping  获取群组ID".PHP_EOL.
+                        "/chat 唠嗑".PHP_EOL.
+                        "/traffic 查询流量".PHP_EOL.
+                        "/checkin 签到续命".PHP_EOL.
+                        "/status 系统状况".PHP_EOL.
+                        "/help 获取帮助信息".PHP_EOL.PHP_EOL.
+                        "您可以在面板里点击 资料编辑 ，滑到页面最下方，就可以看到 Telegram 绑定指示了，绑定您的账号，更多精彩功能等着您去发掘。";
                     $bot->sendMessage($message->getChat()->getId(), $help_list);
                     break;
                 default:
@@ -158,7 +174,7 @@ class TelegramProcess
                             }
                             break;
                         }
-                        $bot->sendMessage($message->getChat()->getId(), Tuling::chat($message->getFrom()->getId(), $message->getText()));
+                        $bot->sendMessage($message->getChat()->getId(), Tuling::chat($message->getFrom()->getId(), $message->getText()), $parseMode = Markdown, $disablePreview = true);
                     }
             }
         } else {
@@ -175,7 +191,7 @@ class TelegramProcess
                     break;
                 case 'chat':
                     if ($message->getChat()->getId() == Config::get('telegram_chatid')) {
-                        $bot->sendMessage($message->getChat()->getId(), Tuling::chat($message->getFrom()->getId(), substr($message->getText(), 5)), $parseMode = null, $disablePreview = false, $replyToMessageId = $message->getMessageId());
+                        $bot->sendMessage($message->getChat()->getId(), Tuling::chat($message->getFrom()->getId(), substr($message->getText(), 5)), $parseMode = Markdown, $disablePreview = true, $replyToMessageId = $message->getMessageId());
                     } else {
                         $bot->sendMessage($message->getChat()->getId(), '不约，叔叔我们不约。', $parseMode = null, $disablePreview = false, $replyToMessageId = $message->getMessageId());
                     }
@@ -186,22 +202,24 @@ class TelegramProcess
                 case 'checkin':
                     TelegramProcess::needbind_method($bot, $message, $command, $user, $message->getMessageId());
                     break;
+                case 'status':
+                    TelegramProcess::needbind_method($bot, $message, $command, $user, $message->getMessageId());
+                    break;
                 case 'help':
-                    $help_list_group = "命令列表：
-						/ping  获取群组ID
-						/chat 唠嗑
-						/traffic 查询流量
-						/checkin 签到续命
-						/help 获取帮助信息
-
-						您可以在面板里点击 资料编辑 ，滑到页面最下方，就可以看到 Telegram 绑定指示了，绑定您的账号，更多精彩功能等着您去发掘。
-					";
+                    $help_list_group = "命令列表：".PHP_EOL.
+                        "/ping  获取群组ID".PHP_EOL.
+                        "/chat 唠嗑".PHP_EOL.
+                        "/traffic 查询流量".PHP_EOL.
+                        "/checkin 签到续命".PHP_EOL.
+                        "/status 系统状况".PHP_EOL.
+                        "/help 获取帮助信息".PHP_EOL.PHP_EOL.
+                        "您可以在面板里点击 资料编辑 ，滑到页面最下方，就可以看到 Telegram 绑定指示了，绑定您的账号，更多精彩功能等着您去发掘。";
                     $bot->sendMessage($message->getChat()->getId(), $help_list_group, $parseMode = null, $disablePreview = false, $replyToMessageId = $message->getMessageId());
                     break;
                 default:
                     if ($message->getText() != null) {
                         if ($message->getChat()->getId() == Config::get('telegram_chatid')) {
-                            $bot->sendMessage($message->getChat()->getId(), Tuling::chat($message->getFrom()->getId(), $message->getText()), $parseMode = null, $disablePreview = false, $replyToMessageId = $message->getMessageId());
+                            $bot->sendMessage($message->getChat()->getId(), Tuling::chat($message->getFrom()->getId(), $message->getText()), $parseMode = Markdown, $disablePreview = true, $replyToMessageId = $message->getMessageId());
                         } else {
                             $bot->sendMessage($message->getChat()->getId(), '不约，叔叔我们不约。', $parseMode = null, $disablePreview = false, $replyToMessageId = $message->getMessageId());
                         }
@@ -219,7 +237,7 @@ class TelegramProcess
             // or initialize with botan.io tracker api key
             // $bot = new \TelegramBot\Api\Client('YOUR_BOT_API_TOKEN', 'YOUR_BOTAN_TRACKER_API_KEY');
 
-            $command_list = array("ping", "chat" ,"traffic", "help", "checkin");
+            $command_list = array("ping", "chat" ,"traffic", "checkin", "status", "help");
             foreach ($command_list as $command) {
                 $bot->command($command, function ($message) use ($bot, $command) {
                     TelegramProcess::telegram_process($bot, $message, $command);
@@ -238,3 +256,4 @@ class TelegramProcess
         }
     }
 }
+
