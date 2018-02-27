@@ -272,12 +272,12 @@
 
 {if $enable_email_verify == 'true'}
 <script>
-var wait=60;
+var wait=120;
 function time(o) {
 		if (wait == 0) {
 			o.removeAttr("disabled");			
 			o.text("获取验证码");
-			wait = 60;
+			wait = 120;
 		} else {
 			o.attr("disabled","disabled");
 			o.text("重新发送(" + wait + ")");
@@ -341,6 +341,7 @@ function time(o) {
 		gt: "{$geetest_html->gt}",
 		challenge: "{$geetest_html->challenge}",
 		product: "embed", // 产品形式，包括：float，embed，popup。注意只对PC版验证码有效
+		width: "100%",
 		offline: {if $geetest_html->success}0{else}1{/if} // 表示用户后台检测极验服务器是否宕机，与SDK配合，用户一般不需要关注
 	}, handlerEmbed);
 </script>

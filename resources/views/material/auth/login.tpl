@@ -331,6 +331,7 @@ $(document).ready(function () {
 	initGeetest({
 		gt: "{$geetest_html->gt}",
 		challenge: "{$geetest_html->challenge}",
+		width: "100%",
 		product: "embed", // 产品形式，包括：float，embed，popup。注意只对PC版验证码有效
 		offline: {if $geetest_html->success}0{else}1{/if} // 表示用户后台检测极验服务器是否宕机，与SDK配合，用户一般不需要关注
 	}, handlerEmbed);
