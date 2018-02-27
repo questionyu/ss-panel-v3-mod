@@ -75,13 +75,13 @@ class AuthController extends BaseController
 
         if ($user == null) {
             $rs['ret'] = 0;
-            $rs['msg'] = "401 邮箱或者密码错误";
+            $rs['msg'] = "401 邮箱或者密码错误，老用户请直接点击忘记密码重置一下就可以恢复登录了。";
             return $response->getBody()->write(json_encode($rs));
         }
 
         if (!Hash::checkPassword($user->pass, $passwd)) {
             $rs['ret'] = 0;
-            $rs['msg'] = "402 邮箱或者密码错误";
+            $rs['msg'] = "402 邮箱或者密码错误，老用户请直接点击忘记密码重置一下就可以恢复登录了。";
 
 
             $loginip=new LoginIp();
@@ -205,7 +205,7 @@ class AuthController extends BaseController
             $user = User::where('email', '=', $email)->first();
             if ($user!=null) {
                 $res['ret'] = 0;
-                $res['msg'] = "此邮箱已经注册";
+                $res['msg'] = "此邮箱已经注册，老用户请直接点击忘记密码重置一下就可以恢复登录了。";
                 return $response->getBody()->write(json_encode($res));
             }
 
@@ -317,7 +317,7 @@ class AuthController extends BaseController
         $user = User::where('email', $email)->first();
         if ($user != null) {
             $res['ret'] = 0;
-            $res['msg'] = "邮箱已经被注册了";
+            $res['msg'] = "邮箱已经被注册了，老用户请直接点击忘记密码重置一下就可以恢复登录了。";
             return $response->getBody()->write(json_encode($res));
         }
 
@@ -372,7 +372,7 @@ class AuthController extends BaseController
         $user->money=0;
         $user->class=0;
         $user->plan='A';
-        $user->node_speedlimit=0;
+        $user->node_speedlimit=8;
         $user->theme=Config::get('theme');
 
         $group=Config::get('ramdom_group');
