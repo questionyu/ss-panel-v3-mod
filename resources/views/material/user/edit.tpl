@@ -154,8 +154,7 @@
 									<div class="card-inner">
 										<p class="card-heading">协议&混淆设置</p>
 										<p>当前协议：{$user->protocol}</p>
-										<p>注意1：如果需要兼容原版SS请选择带_compatible的兼容选项！</p>
-										<p>注意2：如果您使用原版 SS 客户端此处请直接设置为 origin！</p>
+										<p>注意：如果您使用原版 SS 客户端此处请直接设置为 origin！</p>
 										<div class="form-group form-group-label">
 											<label class="floating-label" for="protocol">协议</label>
 											<select id="protocol" class="form-control">
@@ -170,8 +169,7 @@
 
 									<div class="card-inner">
 										<p>当前混淆方式：{$user->obfs}</p>
-										<p>注意1：如果需要兼容原版SS请选择带_compatible的兼容选项！</p>
-										<p>注意2：SS 和 SSR 支持的混淆类型有所不同，simple_obfs_* 为原版 SS 的混淆方式，其他为 SSR 的混淆方式！</p>
+										<p>注意：SS 和 SSR 支持的混淆类型有所不同，simple_obfs_* 为原版 SS 的混淆方式，其他为 SSR 的混淆方式！</p>
 										<div class="form-group form-group-label">
 											<label class="floating-label" for="obfs">混淆方式</label>
 											<select id="obfs" class="form-control">
