@@ -197,13 +197,9 @@ class TelegramProcess
                     }
                     break;
                 case 'traffic':
-                    TelegramProcess::needbind_method($bot, $message, $command, $user, $message->getMessageId());
-                    break;
                 case 'checkin':
-                    TelegramProcess::needbind_method($bot, $message, $command, $user, $message->getMessageId());
-                    break;
                 case 'status':
-                    TelegramProcess::needbind_method($bot, $message, $command, $user, $message->getMessageId());
+                    $bot->sendMessage($message->getChat()->getId(), '请私聊我完成此操作。', $parseMode = null, $disablePreview = false, $replyToMessageId = $message->getMessageId());
                     break;
                 case 'help':
                     $help_list_group = "命令列表：".PHP_EOL.
